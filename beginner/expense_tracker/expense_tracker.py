@@ -3,6 +3,7 @@ import argparse
 from datetime import datetime
 import json
 import shlex
+from calendar import month_name
 
 class ExpenseTracker():
     def __init__(self):
@@ -52,6 +53,10 @@ class ExpenseTracker():
         else:
             return sum(v["amount"] for k, v in self.expenses.items()) 
 
+def format_expenses_list(expenses_json):
+    for k, v in expenses_json.items():
+        print(f"{k}  {v['date']}  {v['description']}  ${v['amount']}")
+
 
 def __main__():
     expense_tracker = ExpenseTracker()
@@ -63,7 +68,7 @@ def __main__():
     add_parser.add_argument('--amount', type=int, required=True, help="Expense amount.")
 
     delete_parser = subparsers.add_parser('delete', help="Delete expense by ID.")
-    delete_parser.add_argument('id', type=int, help="ID of expense to be deleted.")
+    delete_parser.add_argument('--id', type=int, help="ID of expense to be deleted.")
 
     list_parser = subparsers.add_parser('list', help="List all expenses.")
 
@@ -84,15 +89,14 @@ def __main__():
             if args.command == 'delete':
                 expense_tracker.delete(args.id)
             if args.command == 'list':
-                data = expense_tracker.list()
-                print(data)
-                # TODO: Process and print data
+                format_expenses_list(expense_tracker.list())
             if args.command == 'summary':
                 if args.month is not None:
+                    if args.month not in range(1, 13):
+                        print("Month doesn't exist. Please try again.")
+                        continue
                     summary = expense_tracker.summary(args.month)
-                    print(summary)
-                    # TODO: convert numeric month to string and print summary
-                    pass
+                    print(f"Total expenses for {month_name[args.month]}: ${summary}")
                 else:
                     summary = expense_tracker.summary()
                     print(f"Total expenses: ${summary}")
